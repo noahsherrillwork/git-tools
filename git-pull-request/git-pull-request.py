@@ -108,24 +108,17 @@ Released under the MIT License.
 
 import base64
 import getopt
+import getpass
 import json
 import os
+import platform
 import re
 import sys
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
-import urllib.parse
-import getpass
 import tempfile
+import urllib.error
+import urllib.parse
+import urllib.request
 import webbrowser
-# import isodate
-# from datetime import date
-
-import codecs
-import sys
-
-UTF8Writer = codecs.getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
 
 # Connecting through a proxy,
 # requires: socks.py from http://socksipy.sourceforge.net/ next to this file
@@ -234,6 +227,11 @@ options = {
 	# conflict merges in the work directory.
 	'work-dir': None
 }
+
+if 'windows' in platform.platform().lower():
+	# The terminal color encoding does not work on Windows. It prints garbled characters
+	# instead, so disable it.
+	options['enable-color'] = False
 
 URL_BASE = "https://api.github.com/%s"
 SCRIPT_NOTE = 'GitPullRequest Script (by Liferay)'
@@ -1315,7 +1313,9 @@ def github_request(url, params = None, authenticate = True):
 	if authenticate == 'basic':
 		passwd = getpass.getpass("Github password: ").strip()
 
-		auth_string = base64.encodestring('%s:%s' % (auth_username, passwd)).strip()
+		unencoded_auth_string = ('%s:%s' % (auth_username, passwd))
+		utf8_auth_string = unencoded_auth_string.encode('utf-8')
+		auth_string = base64.b64encode(utf8_auth_string).strip()
 
 		authorize_request(req, auth_string, "Basic")
 	elif authenticate == True:
