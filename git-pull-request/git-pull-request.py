@@ -1306,7 +1306,7 @@ def github_request(url, params = None, authenticate = True):
 		if not isinstance(params, str):
 			encode_data = json.dumps(params)
 
-		req = urllib.request.Request(url, encode_data)
+		req = urllib.request.Request(url, encode_data.encode('utf-8'))
 	else:
 		req = urllib.request.Request(url)
 
