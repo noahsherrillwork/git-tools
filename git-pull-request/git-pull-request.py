@@ -112,9 +112,9 @@ import json
 import os
 import re
 import sys
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import getpass
 import tempfile
 import webbrowser
@@ -395,7 +395,7 @@ def color_text(text, token, bold = False):
 		)
 
 		if color_name in colors:
-			return u"\033[{0};{1}m{2}\033[0m".format(
+			return "\033[{0};{1}m{2}\033[0m".format(
 				int(bold),
 				colors.index(color_name) + 30,
 				text)
@@ -428,8 +428,8 @@ def command_comment(repo_name, comment = None, pull_request_ID = None):
 def command_fetch(repo_name, pull_request_ID, auto_update = False):
 	"""Fetches a pull request into a local branch"""
 
-	print color_text("Fetching pull request", 'status')
-	print
+	print(color_text("Fetching pull request", 'status'))
+	print()
 
 	pull_request = get_pull_request(repo_name, pull_request_ID)
 	display_pull_request(pull_request)
@@ -458,17 +458,17 @@ def command_fetch(repo_name, pull_request_ID, auto_update = False):
 		if ret != 0:
 			raise UserWarning("Could not checkout %s" % branch_name)
 
-	print
-	print color_text("Fetch completed", 'success')
-	print
+	print()
+	print(color_text("Fetch completed", 'success'))
+	print()
 	display_status()
 
 def command_close(repo_name, comment = None):
 	"""Closes the current pull request on github with the optional comment, then
 	deletes the branch."""
 
-	print color_text("Closing pull request", 'status')
-	print
+	print(color_text("Closing pull request", 'status'))
+	print()
 
 	branch_name = get_current_branch_name()
 	pull_request_ID = get_pull_request_ID(branch_name)
@@ -484,44 +484,44 @@ def command_close(repo_name, comment = None):
 	if ret != 0:
 		raise UserWarning("Could not checkout %s" % update_branch_option)
 
-	print color_text("Deleting branch %s" % branch_name, 'status')
+	print(color_text("Deleting branch %s" % branch_name, 'status'))
 	ret = os.system('git branch -D %s' % branch_name)
 	if ret != 0:
 		raise UserWarning("Could not delete branch")
 
-	print
-	print color_text("Pull request closed", 'success')
-	print
+	print()
+	print(color_text("Pull request closed", 'success'))
+	print()
 	display_status()
 
 def command_continue_update():
-	print color_text("Continuing update from %s" % options['update-branch'], 'status')
+	print(color_text("Continuing update from %s" % options['update-branch'], 'status'))
 
 	continue_update()
-	print
+	print()
 	display_status()
 
 def command_fetch_all(repo_name):
 	"""Fetches all pull requests into local branches"""
 
-	print color_text("Fetching all pull requests", 'status')
-	print
+	print(color_text("Fetching all pull requests", 'status'))
+	print()
 
 	pull_requests = get_pull_requests(repo_name, options['filter-by-update-branch'])
 
 	for pull_request in pull_requests:
 		fetch_pull_request(pull_request, repo_name)
 		display_pull_request_minimal(pull_request)
-		print
+		print()
 
 	display_status()
 
 def command_help():
-	print __doc__
+	print(__doc__)
 
 def command_info(username, detailed = False):
-	print color_text("Loading information on repositories for %s" % username, 'status')
-	print
+	print(color_text("Loading information on repositories for %s" % username, 'status'))
+	print()
 
 	# Change URL depending on if info user is passed in
 
@@ -548,13 +548,13 @@ def command_info(username, detailed = False):
 
 			if base_name != current_base_name:
 				current_base_name = base_name
-				print ""
-				print '%s:' % color_text(base_name, 'display-title-text')
-				print "---------"
+				print("")
+				print('%s:' % color_text(base_name, 'display-title-text'))
+				print("---------")
 
 			repo_name = "%s/%s" % (pull_request_info['owner']['login'], base_name)
 
-			print "  %s: %s" % (color_text(base_name, 'display-info-repo-title'), color_text(issue_count, 'display-info-repo-count'))
+			print("  %s: %s" % (color_text(base_name, 'display-info-repo-title'), color_text(issue_count, 'display-info-repo-count')))
 
 			if detailed:
 				pull_requests = get_pull_requests(repo_name, False)
@@ -565,16 +565,16 @@ def command_info(username, detailed = False):
 					branch_name = pull_request['base']['ref']
 					if branch_name != current_branch_name:
 						current_branch_name = branch_name
-						print ""
-						print '    %s:' % color_text(current_branch_name, 'display-title-user')
+						print("")
+						print('    %s:' % color_text(current_branch_name, 'display-title-user'))
 
-					print "        %s" % display_pull_request_minimal(pull_request, True)
+					print("        %s" % display_pull_request_minimal(pull_request, True))
 
 			total += issue_count
 
-	print "-"
+	print("-")
 	out = "%s: %s" % (color_text("Total pull requests", 'display-info-total-title', True), color_text(total, 'display-info-total-count', True))
-	print
+	print()
 	display_status()
 	return out
 
@@ -587,8 +587,8 @@ def command_merge(repo_name, comment = None):
 
 	update_branch_option = options['update-branch']
 
-	print color_text("Merging %s into %s" % (branch_name, update_branch_option), 'status')
-	print
+	print(color_text("Merging %s into %s" % (branch_name, update_branch_option), 'status'))
+	print()
 
 	ret = os.system('git checkout %s' % update_branch_option)
 	if ret != 0:
@@ -598,18 +598,18 @@ def command_merge(repo_name, comment = None):
 	if ret != 0:
 		raise UserWarning("Merge with %s failed. Resolve conflicts, switch back into the pull request branch, and merge again" % update_branch_option)
 
-	print color_text("Deleting branch %s" % branch_name, 'status')
+	print(color_text("Deleting branch %s" % branch_name, 'status'))
 	ret = os.system('git branch -D %s' % branch_name)
 	if ret != 0:
 		raise UserWarning("Could not delete branch")
 
 	if options['merge-auto-close']:
-		print color_text("Closing pull request", 'status')
+		print(color_text("Closing pull request", 'status'))
 		close_pull_request(repo_name, pull_request_ID, comment)
 
-	print
-	print color_text("Merge completed", 'success')
-	print
+	print()
+	print(color_text("Merge completed", 'success'))
+	print()
 	display_status()
 
 def command_open(repo_name, pull_request_ID = None):
@@ -637,13 +637,13 @@ def command_show(repo_name):
 	else:
 		update_branch_name = "on branch '%s'" % update_branch_name
 
-	print color_text("Loading open pull requests for %s %s" % (repo_name, update_branch_name), 'status')
-	print
+	print(color_text("Loading open pull requests for %s %s" % (repo_name, update_branch_name), 'status'))
+	print()
 
 	pull_requests = get_pull_requests(repo_name, filter_by_update_branch)
 
 	if len(pull_requests) == 0:
-		print "No open pull requests found"
+		print("No open pull requests found")
 
 	for pull_request in pull_requests:
 		display_pull_request(pull_request)
@@ -654,12 +654,12 @@ def command_show_alias(alias):
 	""" Shows the username where the alias points to
 	"""
 
-	user_item = next((user for user in users.iteritems() if user[0] == alias or user[1] == alias), None)
+	user_item = next((user for user in users.items() if user[0] == alias or user[1] == alias), None)
 
 	if user_item:
-		print "The user alias %s points to %s " % user_item
+		print("The user alias %s points to %s " % user_item)
 	else:
-		print "There is no user alias or github name matching %s in the current mapping file" % alias
+		print("There is no user alias or github name matching %s in the current mapping file" % alias)
 
 
 def get_pr_stats(repo_name, pull_request_ID):
@@ -667,7 +667,7 @@ def get_pr_stats(repo_name, pull_request_ID):
 		try:
 			pull_request_ID = int(pull_request_ID)
 			pull_request = get_pull_request(repo_name, pull_request_ID)
-		except Exception, e:
+		except Exception as e:
 			pull_request = pull_request_ID
 
 		display_pull_request_minimal(pull_request)
@@ -716,7 +716,7 @@ def get_pr_stats(repo_name, pull_request_ID):
 
 		ret = os.popen("echo '{2}, {3}' && git diff --numstat --pretty='%H' --no-renames {0}..{1} | xargs -0n1 echo -n | cut -f 3- | sed -e 's/^.*\.\(.*\)$/\\1/' | sort | uniq -c | tr '\n' ',' | sed 's/,$//'".format(merge_base, branch_name, shortstat, stats)).read().strip()
 
-		print ret
+		print(ret)
 
 		stats_footer = options['stats-footer']
 
@@ -750,9 +750,9 @@ def get_pr_stats(repo_name, pull_request_ID):
 			if fn:
 				footer_result = os.popen(footer_result.encode('utf-8')).read().strip().decode('utf-8')
 
-			print footer_result
+			print(footer_result)
 
-		print
+		print()
 	else:
 		pull_requests = get_pull_requests(repo_name, options['filter-by-update-branch'])
 
@@ -766,7 +766,7 @@ def command_submit(repo_name, username, reviewer_repo_name = None, pull_body = N
 
 	branch_name = get_current_branch_name(False)
 
-	print color_text("Submitting pull request for %s" % branch_name, 'status')
+	print(color_text("Submitting pull request for %s" % branch_name, 'status'))
 
 	if reviewer_repo_name is None or reviewer_repo_name == '':
 		reviewer_repo_name = get_repo_name_for_remote('upstream')
@@ -777,7 +777,7 @@ def command_submit(repo_name, username, reviewer_repo_name = None, pull_body = N
 	if '/' not in reviewer_repo_name:
 		reviewer_repo_name = repo_name.replace(username, reviewer_repo_name)
 
-	print color_text("Pushing local branch %s to origin" % branch_name, 'status')
+	print(color_text("Pushing local branch %s to origin" % branch_name, 'status'))
 
 	ret = os.system('git push origin %s' % branch_name)
 
@@ -838,17 +838,17 @@ def command_submit(repo_name, username, reviewer_repo_name = None, pull_body = N
 		'body': pull_body
 	}
 
-	print color_text("Sending pull request to %s" % reviewer_repo_name, 'status')
+	print(color_text("Sending pull request to %s" % reviewer_repo_name, 'status'))
 
 	pull_request = None
 
 	try:
 		pull_request = github_json_request(url, params)
-	except Exception, e:
+	except Exception as e:
 		msg = e
 
 	if not pull_request:
-		print "Couldn't get a response from github, going to check if the pull was submitted anyways..."
+		print("Couldn't get a response from github, going to check if the pull was submitted anyways...")
 
 		reviewer_pulls = get_pull_requests(reviewer_repo_name, True)
 
@@ -864,12 +864,12 @@ def command_submit(repo_name, username, reviewer_repo_name = None, pull_body = N
 	if new_pr_url and new_pr_url != '':
 		meta('new_pr_url', new_pr_url)
 
-	print
+	print()
 	display_pull_request(pull_request)
-	print
+	print()
 
-	print color_text("Pull request submitted", 'success')
-	print
+	print(color_text("Pull request submitted", 'success'))
+	print()
 	display_status()
 
 	if submitOpenGitHub:
@@ -886,10 +886,10 @@ def command_update(repo_name, target = None):
 		except ValueError:
 			branch_name = target
 
-	print color_text("Updating %s from %s" % (branch_name, options['update-branch']), 'status')
+	print(color_text("Updating %s from %s" % (branch_name, options['update-branch']), 'status'))
 
 	update_branch(branch_name)
-	print
+	print()
 	display_status()
 
 def command_update_users(filename, url = None, github_users = None, total_pages = 0, all_pages = True):
@@ -903,13 +903,13 @@ def command_update_users(filename, url = None, github_users = None, total_pages 
 
 			params = {'per_page': '100', 'sort': 'oldest'}
 
-			url_parts = list(urlparse.urlparse(url))
-			query = dict(urlparse.parse_qsl(url_parts[4]))
+			url_parts = list(urllib.parse.urlparse(url))
+			query = dict(urllib.parse.parse_qsl(url_parts[4]))
 			query.update(params)
 
-			url_parts[4] = urllib.urlencode(query)
+			url_parts[4] = urllib.parse.urlencode(query)
 
-			url = urlparse.urlunparse(url_parts)
+			url = urllib.parse.urlunparse(url_parts)
 
 	if github_users is None:
 		github_users = {}
@@ -919,9 +919,9 @@ def command_update_users(filename, url = None, github_users = None, total_pages 
 	m = re.search('[?&]page=(\d+)', url)
 
 	if m is not None and m.group(1) != '':
-		print "Doing another request for page: %s of %s" % (m.group(1), total_pages)
+		print("Doing another request for page: %s of %s" % (m.group(1), total_pages))
 	else:
-		print "There are more than %s users, this could take a few minutes..." % len(items)
+		print("There are more than %s users, this could take a few minutes..." % len(items))
 
 	user_api_url = get_api_url("users")
 
@@ -991,15 +991,15 @@ def get_user_email(github_user_info):
 			# Unicode characters usually do not appear in Liferay emails, so
 			# we'll replace them with the closest ASCII equivalent
 
-			email = email.replace(u'\u00e1', 'a')
-			email = email.replace(u'\u00e3', 'a')
-			email = email.replace(u'\u00e9', 'e')
-			email = email.replace(u'\u00f3', 'o')
-			email = email.replace(u'\u00fd', 'y')
-			email = email.replace(u'\u0107', 'c')
-			email = email.replace(u'\u010d', 'c')
-			email = email.replace(u'\u0151', 'o')
-			email = email.replace(u'\u0161', 's')
+			email = email.replace('\u00e1', 'a')
+			email = email.replace('\u00e3', 'a')
+			email = email.replace('\u00e9', 'e')
+			email = email.replace('\u00f3', 'o')
+			email = email.replace('\u00fd', 'y')
+			email = email.replace('\u0107', 'c')
+			email = email.replace('\u010d', 'c')
+			email = email.replace('\u0151', 'o')
+			email = email.replace('\u0161', 's')
 
 	return email
 
@@ -1009,7 +1009,7 @@ def command_pull(repo_name):
 
 	branch_name = get_current_branch_name()
 
-	print color_text("Pulling remote changes into %s" % branch_name, 'status')
+	print(color_text("Pulling remote changes into %s" % branch_name, 'status'))
 
 	pull_request_ID = get_pull_request_ID(branch_name)
 
@@ -1019,16 +1019,16 @@ def command_pull(repo_name):
 	branch_name = build_branch_name(pull_request)
 	remote_branch_name = 'refs/pull/%s/head' % pull_request['number']
 
-	print color_text("Pulling from %s (%s)" % (repo_url, pull_request['head']['ref']), 'status')
+	print(color_text("Pulling from %s (%s)" % (repo_url, pull_request['head']['ref']), 'status'))
 
 	ret = os.system('git pull %s %s' % (repo_url, remote_branch_name))
 
 	if ret != 0:
 		raise UserWarning("Pull failed, resolve conflicts")
 
-	print
-	print color_text("Updating %s from remote completed" % branch_name, 'success')
-	print
+	print()
+	print(color_text("Updating %s from remote completed" % branch_name, 'success'))
+	print()
 	display_status()
 
 def complete_update(branch_name):
@@ -1041,7 +1041,7 @@ def complete_update(branch_name):
 
 		original_dir_path = get_original_dir_path()
 
-		print color_text("Switching to original directory: '%s'" % original_dir_path, 'status')
+		print(color_text("Switching to original directory: '%s'" % original_dir_path, 'status'))
 
 		os.chdir(original_dir_path)
 		chdir(original_dir_path)
@@ -1059,8 +1059,8 @@ def complete_update(branch_name):
 
 	branch_treeish = update_meta()
 
-	print
-	print color_text("Updating %s from %s complete" % (branch_name, update_branch_option), 'success')
+	print()
+	print(color_text("Updating %s from %s complete" % (branch_name, update_branch_option), 'success'))
 
 def command_update_meta():
 	update_meta()
@@ -1086,7 +1086,7 @@ def display_pull_request(pull_request):
 
 	description_indent = options['description-indent']
 
-	print "%s%s" % (description_indent, color_text(pull_request.get('html_url'), 'display-title-url'))
+	print("%s%s" % (description_indent, color_text(pull_request.get('html_url'), 'display-title-url')))
 
 	pr_body = pull_request.get('body')
 
@@ -1105,9 +1105,9 @@ def display_pull_request(pull_request):
 
 			pr_body = '\n'.join(pr_body)
 
-		print pr_body
+		print(pr_body)
 
-	print
+	print()
 
 def display_pull_request_minimal(pull_request, return_text=False):
 	"""Display minimal info about a given pull request"""
@@ -1117,14 +1117,14 @@ def display_pull_request_minimal(pull_request, return_text=False):
 	if return_text:
 		return text
 
-	print text
+	print(text)
 
 def display_status():
 	"""Displays the current branch name"""
 
 	branch_name = get_current_branch_name(False)
 	out = "Current branch: %s" % branch_name
-	print out
+	print(out)
 	return out
 
 def fetch_pull_request(pull_request, repo_name):
@@ -1149,7 +1149,7 @@ def fetch_pull_request(pull_request, repo_name):
 		ret = os.system('git show-ref --verify refs/heads/%s' % branch_name)
 
 	if ret != 0:
-		print "Could not get from refs/pull/%s/head, trying to brute force the fetch" % pull_request['number']
+		print("Could not get from refs/pull/%s/head, trying to brute force the fetch" % pull_request['number'])
 
 		repo_url = get_repo_url(pull_request, repo_name, True)
 		remote_branch_name = pull_request['head']['ref']
@@ -1308,9 +1308,9 @@ def github_request(url, params = None, authenticate = True):
 		if not isinstance(params, str):
 			encode_data = json.dumps(params)
 
-		req = urllib2.Request(url, encode_data)
+		req = urllib.request.Request(url, encode_data)
 	else:
-		req = urllib2.Request(url)
+		req = urllib.request.Request(url)
 
 	if authenticate == 'basic':
 		passwd = getpass.getpass("Github password: ").strip()
@@ -1322,17 +1322,17 @@ def github_request(url, params = None, authenticate = True):
 		authorize_request(req)
 
 	if DEBUG:
-		print url
+		print(url)
 
 	req.add_header('Accept', 'application/vnd.github.v3+json')
 
 	try:
-		response = urllib2.urlopen(req)
-	except urllib2.URLError, msg:
+		response = urllib.request.urlopen(req)
+	except urllib.error.URLError as msg:
 		if authenticate and msg.code == 401 and auth_token:
-			print ""
-			print color_text('Could not authorize you to connect with Github. Try running "git config --global --unset github.oauth-token" and running your command again to reauthenticate.', 'error')
-			print ""
+			print("")
+			print(color_text('Could not authorize you to connect with Github. Try running "git config --global --unset github.oauth-token" and running your command again to reauthenticate.', 'error'))
+			print("")
 
 		raise UserWarning("Error communicating with github: \n%s\n%s" % (url, msg))
 
@@ -1390,7 +1390,7 @@ def load_users(filename):
 	try:
 		github_users_file = open(filename, 'r')
 	except IOError:
-		print "File %s could not be found. Using email names will not be available. Run the update-users command to enable this functionality" % filename
+		print("File %s could not be found. Using email names will not be available. Run the update-users command to enable this functionality" % filename)
 		return {}
 
 	github_users = json.load(github_users_file)
@@ -1441,7 +1441,7 @@ def meta(key = None, value = None):
 
 			return val
 
-		except Exception, e:
+		except Exception as e:
 			log("Could not update '%s' with '%s'" % (key, value))
 
 
@@ -1464,7 +1464,7 @@ def update_meta():
 	else:
 		branch_treeish = '%s..%s' % (parent_commit, head_commit)
 
-	print color_text("Original commits: %s" % branch_treeish, 'status')
+	print(color_text("Original commits: %s" % branch_treeish, 'status'))
 
 	return branch_treeish
 
@@ -1477,7 +1477,7 @@ def main():
 	# parse command line options
 	try:
 		opts, args = getopt.gnu_getopt(sys.argv[1:], 'hqar:u:l:b:', ['help', 'quiet', 'all', 'repo=', 'reviewer=', 'update', 'no-update', 'user=', 'update-branch=', 'authenticate', 'debug', 'force-color'])
-	except getopt.GetoptError, e:
+	except getopt.GetoptError as e:
 		raise UserWarning("%s\nFor help use --help" % e)
 
 	arg_length = len(args)
@@ -1554,7 +1554,7 @@ def main():
 			FORCE_COLOR = True
 
 	if len(username) == 0:
-		username = raw_input("Github username: ").strip()
+		username = input("Github username: ").strip()
 		os.system("git config --global github.user %s" % username)
 
 	auth_username = username
@@ -1617,7 +1617,7 @@ def main():
 					if arg_length == 3:
 						comment = args[2]
 
-					print color_text("Closing pull request", 'status')
+					print(color_text("Closing pull request", 'status'))
 					close_pull_request(repo_name, pull_request_ID, comment)
 				else:
 					command_close(repo_name, comment)
@@ -1688,7 +1688,7 @@ def lookup_alias(key):
 	try:
 		if users and (key in users) and users[key]:
 			user_alias = users[key]
-	except Exception, e:
+	except Exception as e:
 		pass
 
 	return user_alias
@@ -1722,7 +1722,7 @@ def update_branch(branch_name):
 	if work_dir:
 		original_dir_path = get_git_base_path()
 
-		print color_text("Switching to work directory %s" % work_dir, 'status')
+		print(color_text("Switching to work directory %s" % work_dir, 'status'))
 		os.chdir(work_dir)
 
 		f = open(os.path.join(work_dir, '.git', 'original_dir_path'), 'wb')
@@ -1754,12 +1754,12 @@ def update_branch(branch_name):
 
 def log(*args):
 	for arg in args:
-		print json.dumps(arg, sort_keys=True, indent=4)
-		print "/---"
+		print(json.dumps(arg, sort_keys=True, indent=4))
+		print("/---")
 
 if __name__ == "__main__":
 	try:
 		main()
-	except UserWarning, e:
-		print color_text(e, 'error')
+	except UserWarning as e:
+		print(color_text(e, 'error'))
 		sys.exit(1)
