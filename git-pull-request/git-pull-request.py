@@ -1328,12 +1328,14 @@ def github_request(url, params = None, authenticate = True):
 
 	try:
 		response = urllib.request.urlopen(req)
-	except urllib.error.URLError as msg:
+	except urllib.error.HTTPError as msg:
 		if authenticate and msg.code == 401 and auth_token:
 			print("")
 			print(color_text('Could not authorize you to connect with Github. Try running "git config --global --unset github.oauth-token" and running your command again to reauthenticate.', 'error'))
 			print("")
 
+		raise UserWarning("Error communicating with github: \n%s\n%s" % (url, msg))
+	except urllib.error.URLError as msg:
 		raise UserWarning("Error communicating with github: \n%s\n%s" % (url, msg))
 
 	data = response.read()
